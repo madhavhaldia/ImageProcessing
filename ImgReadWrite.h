@@ -53,7 +53,6 @@ class Image {
 	InfoHeader infoHeader;
 	ColorHeader colorHeader;
 	int rowPadding{ 0 };
- public:
 	vector<uint8_t> imgData;
  private:
 
@@ -96,6 +95,13 @@ class Image {
 	}
 
 public:
+	Image(Image &Img, vector<uint8_t> imageData) // Use this while printing image
+	{
+		setFileHeader(Img.getFileHeader());
+		setInfoHeader(Img.getInfoHeader());
+		setColorHeader(Img.getColorHeader());
+		imgData = imageData;
+	}
 	Image(const char* ImgName)
 	{
 		read(ImgName);
@@ -239,7 +245,35 @@ public:
 		else {
 			// Cant open output image
 		}
-	}
 
+	}
+	FileHeader getFileHeader()
+	{
+		return fileHeader;
+	}
+	InfoHeader getInfoHeader()
+	{
+		return infoHeader;
+	}
+	ColorHeader getColorHeader()
+	{
+		return colorHeader;
+	}
+	vector<uint8_t> getImgData()
+	{
+		return imgData;
+	}
+	void setFileHeader(FileHeader data)
+	{
+		fileHeader = data;
+	}
+	void setInfoHeader(InfoHeader data)
+	{
+		infoHeader = data;
+	}
+	void setColorHeader(ColorHeader data)
+	{
+		colorHeader = data;
+	}
 };
 
