@@ -52,8 +52,10 @@ class Image {
 	FileHeader fileHeader;
 	InfoHeader infoHeader;
 	ColorHeader colorHeader;
-	vector<uint8_t> imgData;
 	int rowPadding{ 0 };
+ public:
+	vector<uint8_t> imgData;
+ private:
 
 	int matchPadding(int rowPadding)
 	{
