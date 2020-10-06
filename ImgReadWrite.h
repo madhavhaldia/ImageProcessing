@@ -101,6 +101,7 @@ public:
 		setInfoHeader(Img.getInfoHeader());
 		setColorHeader(Img.getColorHeader());
 		imgData = imageData;
+		rowPadding = Img.rowPadding;
 	}
 	Image(const char* ImgName)
 	{
