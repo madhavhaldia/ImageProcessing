@@ -248,11 +248,16 @@ public:
 		}
 
 	}
-	void brightnessUp(vector<uint8_t> _inputImgData, vector<uint8_t> _outputImgData, int imgSize, int brightness) {
+	vector<uint8_t> brightnessUp(vector<uint8_t> _inputImgData, vector<uint8_t> _outputImgData, int imgSize, int brightness) {
 		for (int i = 0; i < imgSize; i++) {
+			
 			int temp = _inputImgData[i] + brightness;
 			_outputImgData[i] = (temp > 255) ? 255 : temp;
+			//cout << _outputImgData[i];
+			/*_outputImgData[i] = 0;*/
+			
 		}
+		return _outputImgData;
 	}
 	FileHeader getFileHeader()
 	{
