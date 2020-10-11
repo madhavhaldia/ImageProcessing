@@ -54,6 +54,7 @@ class Image {
 	ColorHeader colorHeader;
 	int rowPadding{ 0 };
 	vector<uint8_t> imgData;
+	vector<vector<uint8_t>> imgTable;
  private:
 
 	int matchPadding(int rowPadding)
@@ -189,6 +190,7 @@ public:
 			if (infoHeader.width % 4 == 0)
 			{
 				imgIn.read((char*)imgData.data(), imgData.size());
+				imgIn.read((char*)imgTable.data(), imgTable.size());
 				fileHeader.size += static_cast<uint32_t>(imgData.size());
 			}
 			else
