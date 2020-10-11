@@ -54,8 +54,9 @@ class Image {
 	ColorHeader colorHeader;
 	int rowPadding{ 0 };
 	vector<uint8_t> imgData;
+public:
 	vector<vector<uint8_t>> imgTable;
- private:
+private:
 
 	int matchPadding(int rowPadding)
 	{
