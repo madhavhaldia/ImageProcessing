@@ -268,6 +268,26 @@ public:
 		}
 		return _outputImgData;
 	}
+	vector < vector<uint8_t>> rotate(vector<uint8_t> _inputImgData, vector<uint8_t> _outputImgData, int Imgheight, int Imgwidth) {
+		int selected;
+		
+		vector<vector<uint8_t>> buffer(Imgheight, vector<uint8_t>(Imgwidth, 0));
+		
+		std::cout << "Enter rotaion direction \n";
+		std::cout << "1. Rotate right\n";
+		std::cout << "2. Rotate left\n";
+		std::cout << "3. Rotate 180\n";
+		std::cin >> selected;
+		switch (selected)
+		{
+		case 1:
+			for (int i = 0; i < Imgwidth; i++) {
+				for (int j = 0; j < Imgheight; j++) {
+					//_outputImgData[j][Imgheight - 1 - i];
+				}
+			}
+		}
+	}
 	FileHeader getFileHeader()
 	{
 		return fileHeader;
