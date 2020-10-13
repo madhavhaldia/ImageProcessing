@@ -251,6 +251,43 @@ public:
 		}
 
 	}
+	void writeMatrix(const char* imgName)
+	{
+		ofstream imgOut{ imgName, ios::binary };
+		if (imgOut)
+		{
+			if (infoHeader.bitcount == 32)
+			{
+				dataWriter(imgOut);
+			}
+			else if (infoHeader.bitcount == 24)
+			{
+				if (infoHeader.width % 4 == 0)
+				{
+					dataWriter(imgOut);
+				}
+				else
+				{
+					int newRow = matchPadding(4);
+					vector<int> paddingRow(newRow - rowPadding);
+					headerWrite(imgOut);
+					for (auto i = 0; i < infoHeader.height; ++i)
+					{
+						imgOut.write((const char*)(imgTable.data() + this->rowPadding * i), this->rowPadding);
+						imgOut.write((const char*)paddingRow.data(), paddingRow.size());
+					}
+				}
+			}
+			else
+			{
+				cout << "Exception .. improper bits per pixel";
+			}
+		}
+		else {
+			// Cant open output image
+		}
+
+	}
 	vector<uint8_t> brightnessUp(vector<uint8_t> _inputImgData, vector<uint8_t> _outputImgData, int imgSize, int brightness) {
 		for (int i = 0; i < imgSize; i++) {
 			
@@ -271,7 +308,7 @@ public:
 		}
 		return _outputImgData;
 	}
-	vector < vector<uint8_t>> rotate(vector<uint8_t> _inputImgData, vector<uint8_t> _outputImgData, int Imgheight, int Imgwidth) {
+	vector < vector<uint8_t>> rotate(vector<vector<uint8_t>> imgTable, vector<vector<uint8_t>> _outputImgData, int Imgheight, int Imgwidth, InfoHeader InputInfoHeader, InfoHeader OutputInfoHeader) {
 		int selected;
 		
 		vector<vector<uint8_t>> buffer(Imgheight, vector<uint8_t>(Imgwidth, 0));
@@ -286,9 +323,13 @@ public:
 		case 1:
 			for (int i = 0; i < Imgwidth; i++) {
 				for (int j = 0; j < Imgheight; j++) {
-					//_outputImgData[j][Imgheight - 1 - i];
+					_outputImgData[j][Imgheight - 1 - i] = imgTable[i][j];
 				}
 			}
+			OutputInfoHeader.height = InputInfoHeader.width;
+			OutputInfoHeader.width = InputInfoHeader.height;
+			return _outputImgData;
+			break;
 		}
 	}
 	FileHeader getFileHeader()
