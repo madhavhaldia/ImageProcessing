@@ -259,14 +259,14 @@ public:
 
 	}
 
-	 void blur() {
+	 void blur() {												//filterblur
 		uint32_t num_threads = infoHeader.height;
 		
 
 		time_t start, end;
 		time(&start);
 		
-			some_threads.push_back(std::thread(&Image::transform_to_blur, this));
+			some_threads.push_back(std::thread(&Image::transform_to_blur, this));			//call blur function
 			
 		for (auto& t : some_threads) {
 			t.join();
@@ -281,9 +281,9 @@ public:
 
 		double blur_filter[3][3] =
 		{
-		   0, 0, 0,
-		   0, 1, 0,
-		   0, 0, 0
+		   0.11, 0.11, 0.11,
+		   0.11, 0.11, 0.11,
+		   0.11, 0.11, 0.11
 		};
 
 		double blur_factor = 1.0;
@@ -332,14 +332,16 @@ public:
 
 
 
-	void noise() {
+
+
+	void sharpen() {											//filter sharpening
 		uint32_t num_threads = infoHeader.height;
 
 
 		time_t start, end;
 		time(&start);
 
-		some_threads.push_back(std::thread(&Image::transform_to_noise, this));
+		some_threads.push_back(std::thread(&Image::transform_to_sharpen, this));
 
 		for (auto& t : some_threads) {
 			t.join();
@@ -350,36 +352,33 @@ public:
 
 	}
 
-	void transform_to_noise() {
+	void transform_to_sharpen() {
 
-		double blur_filter[3][3] =
+		double sharpening_filter[3][3] =
 		{
-		   0, 0, 0,
-		   0, 1, 0,
-		   0, 0, 0
+		   0  , -.5 ,    0 ,
+		  -.5 ,   3  , -.5,
+		  0  , -.5 ,    0
 		};
 
-		double blur_factor = 1.0;
-		double blur_bias = 0.0;
 
 
-		uint32_t channels = infoHeader.bitcount / 8;
 		uint32_t A{ 0 }, R{ 0 }, G{ 0 }, B{ 0 }, grey{ 0 };
-		uint32_t tr{ 0 }, tg{ 0 }, tb{ 0 };
+
 		uint32_t w = infoHeader.width, h = infoHeader.height;
+
 		mtx_sepia.lock();
 
-		global_row_blur_threads = 0;
+
 
 		for (int x = 0; x < w; x++)
 		{
+			R = imgData[(infoHeader.width + x) + 0];
+			G = imgData[(infoHeader.width + x) + 1];
+			B = imgData[(infoHeader.width + x) + 2];
+
 			for (int y = 0; y < h; y++)
 			{
-
-				R = imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 0];
-				G = imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 1];
-				B = imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 2];
-
 				for (int filterY = 0; filterY < 3; filterY++)
 					for (int filterX = 0; filterX < 3; filterX++)
 					{
@@ -387,16 +386,16 @@ public:
 						int imageY = (y - 3 / 2 + filterY + h) % h;
 
 
-						R += imgData[imageY * w + imageX] * blur_filter[filterY][filterX];
-						G += imgData[imageY * w + imageX] * blur_filter[filterY][filterX];
-						B += imgData[imageY * w + imageX] * blur_filter[filterY][filterX];
+						R += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						G += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						B += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
 					}
 
-				imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 0] = R;
-				imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 1] = G;
-				imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 2] = B;
+				imgData[(infoHeader.width + x) + 0] = R;
+				imgData[(infoHeader.width + x) + 1] = G;
+				imgData[(infoHeader.width + x) + 2] = B;
 			}
-			global_row_blur_threads += 1;
+
 		}
 
 		mtx_sepia.unlock();
