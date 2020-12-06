@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <thread>
 std::mutex mtx_sepia;
+std::mutex mtx_grey;
+
 using namespace std;
 /// Using Pragma pack to remove padding
 /// The following is the standard header for BMP
@@ -59,6 +61,8 @@ class Image {
 	int rowPadding{ 0 };
 	vector<uint8_t> imgData;
 	uint32_t global_row_sepia_threads{ 0};
+	uint32_t global_row_greyscale_threads{ 0};
+
     std::vector<std::thread> some_threads;
 public:
 	vector<vector<uint8_t>> imgTable;
@@ -257,6 +261,23 @@ public:
 		}
 
 	}
+	void grayscale() {
+        uint32_t num_threads = infoHeader.height;
+        global_row_greyscale_threads = 0;
+
+        time_t start, end;
+        time(&start);
+        for (uint32_t i = 0; i < num_threads; i++) {
+            some_threads.push_back(std::thread(&Image::transform_row_to_greyscale, this));
+        }
+        for (auto& t : some_threads) {
+            t.join();
+        }
+        some_threads.clear();
+        time(&end);
+        std::cout << difftime(end, start) << " seconds (rgb to grescale - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
+    }
+
 
 	void sepia() {
 
@@ -278,6 +299,24 @@ public:
         time(&end);
         std::cout << difftime(end, start) << " seconds (rgb to sepia - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
 
+    }
+	void transform_row_to_greyscale() {
+        uint32_t channels = infoHeader.bitcount / 8;
+        uint32_t A{0}, R{0}, G{0}, B{0}, grey{0};
+        mtx_grey.lock();
+        for (uint32_t column = 0; column < infoHeader.width; column++) {
+            R = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 0];
+            G = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 1];
+            B = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 2];
+
+            grey = ((0.3 * R) + (0.59 * G) + (0.11 * B));
+
+            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 0] = grey;
+            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 1] = grey;
+            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 2] = grey;
+        }
+        global_row_greyscale_threads += 1;
+        mtx_grey.unlock();
     }
 
     transform_row_to_sepia() {
