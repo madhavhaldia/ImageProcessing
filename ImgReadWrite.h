@@ -563,14 +563,14 @@ public:
 
 
 
-void grayscale() {
+	void grayscale() {
         uint32_t num_threads = infoHeader.height;
-        global_row_greyscale_threads = 0;
+        globalRowGreyscale = 0;
 
         time_t start, end;
         time(&start);
         for (uint32_t i = 0; i < num_threads; i++) {
-            some_threads.push_back(std::thread(&Image::transform_row_to_greyscale, this));
+            some_threads.push_back(std::thread(&Image::RowToGrayscale, this));
         }
         for (auto& t : some_threads) {
             t.join();
@@ -587,12 +587,12 @@ void grayscale() {
 
 
         uint32_t num_threads = infoHeader.height;
-        global_row_sepia_threads = 0;
+        globalRowSepia = 0;
 
         time_t start, end;
         time(&start);
         for (uint32_t i = 0; i < num_threads; i++) {
-            some_threads.push_back(std::thread(&Image::transform_row_to_sepia, this));
+            some_threads.push_back(std::thread(&Image::RowToSepia, this));
             }
         for (auto& t : some_threads) {
             t.join();
@@ -602,35 +602,35 @@ void grayscale() {
         std::cout << difftime(end, start) << " seconds (rgb to sepia - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
 
     }
-	void transform_row_to_greyscale() {
+	void RowToGrayscale() {
         uint32_t channels = infoHeader.bitcount / 8;
         uint32_t A{0}, R{0}, G{0}, B{0}, grey{0};
         mtx_grey.lock();
         for (uint32_t column = 0; column < infoHeader.width; column++) {
-            R = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 0];
-            G = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 1];
-            B = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 2];
+            R = imgData[channels * (globalRowGreyscale * infoHeader.width + column) + 0];
+            G = imgData[channels * (globalRowGreyscale * infoHeader.width + column) + 1];
+            B = imgData[channels * (globalRowGreyscale * infoHeader.width + column) + 2];
 
             grey = ((0.3 * R) + (0.59 * G) + (0.11 * B));
 
-            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 0] = grey;
-            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 1] = grey;
-            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 2] = grey;
+            imgData[channels * (globalRowGreyscale * infoHeader.width + column) + 0] = grey;
+            imgData[channels * (globalRowGreyscale * infoHeader.width + column) + 1] = grey;
+            imgData[channels * (globalRowGreyscale * infoHeader.width + column) + 2] = grey;
         }
-        global_row_greyscale_threads += 1;
+        globalRowGreyscale += 1;
         mtx_grey.unlock();
     }
 
-    transform_row_to_sepia() {
+    RowToSepia() {
 
         uint32_t channels = infoHeader.bitcount / 8;
         uint32_t A{0}, R{0}, G{0}, B{0}, grey{0};
         uint32_t tr{0}, tg{0}, tb{0};
         mtx_sepia.lock();
         for (uint32_t column = 0; column < infoHeader.width; column++) {
-            R = imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 0];
-            G = imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 1];
-            B = imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 2];
+            R = imgData[channels * (globalRowSepia * infoHeader.width + column) + 0];
+            G = imgData[channels * (globalRowSepia * infoHeader.width + column) + 1];
+            B = imgData[channels * (globalRowSepia * infoHeader.width + column) + 2];
 
             tr = 0.393 * R + 0.769 * G + 0.189 * B;
             tg = 0.349 * R + 0.686 * G + 0.168 * B;
@@ -643,15 +643,14 @@ void grayscale() {
             if (tb > 255) B = 255;
             else B = tb;
 
-            imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 0] = R;
-            imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 1] = G;
-            imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 2] = B;
+            imgData[channels * (globalRowSepia * infoHeader.width + column) + 0] = R;
+            imgData[channels * (globalRowSepia * infoHeader.width + column) + 1] = G;
+            imgData[channels * (globalRowSepia * infoHeader.width + column) + 2] = B;
         }
-        global_row_sepia_threads += 1;
+        globalRowSepia += 1;
         mtx_sepia.unlock();
 
     }
-
 	FileHeader getFileHeader()
 	{
 		return fileHeader;
