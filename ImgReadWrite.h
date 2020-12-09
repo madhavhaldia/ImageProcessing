@@ -621,7 +621,7 @@ public:
         mtx_grey.unlock();
     }
 
-    RowToSepia() {
+    void RowToSepia() {
 
         uint32_t channels = infoHeader.bitcount / 8;
         uint32_t A{0}, R{0}, G{0}, B{0}, grey{0};
