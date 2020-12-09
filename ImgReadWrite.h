@@ -332,6 +332,326 @@ public:
 			break;
 		}
 	}
+	void blur() {												//filterblur
+		uint32_t num_threads = infoHeader.height;
+		
+
+		time_t start, end;
+		time(&start);
+		
+			some_threads.push_back(std::thread(&Image::transform_to_blur, this));			//call blur function
+			
+		for (auto& t : some_threads) {
+			t.join();
+		}
+		some_threads.clear();
+		time(&end);
+		std::cout << difftime(end, start) << " seconds (rgb to sepia - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
+
+	}
+
+	void transform_to_blur() {
+
+		double blur_filter[3][3] =
+		{
+		   0.11, 0.11, 0.11,
+		   0.11, 0.11, 0.11,
+		   0.11, 0.11, 0.11
+		};
+
+		double blur_factor = 1.0;
+		double blur_bias = 0.0;
+
+
+		uint32_t channels = infoHeader.bitcount / 8;
+		uint32_t A{ 0 }, R{ 0 }, G{ 0 }, B{ 0 }, grey{ 0 };
+		uint32_t tr{ 0 }, tg{ 0 }, tb{ 0 };
+		uint32_t w = infoHeader.width, h = infoHeader.height;
+		mtx_sepia.lock();
+
+		global_row_blur_threads = 0;
+
+		for (int x = 0; x < w; x++)
+		{
+			for (int y = 0; y < h; y++)
+			{
+
+				R = imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 0];
+				G = imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 1];
+				B = imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 2];
+
+				for (int filterY = 0; filterY < 3; filterY++)
+					for (int filterX = 0; filterX < 3; filterX++)
+					{
+						int imageX = (x - 3 / 2 + filterX + w) % w;
+						int imageY = (y - 3 / 2 + filterY + h) % h;
+
+
+						R += imgData[imageY * w + imageX] * blur_filter[filterY][filterX];
+						G += imgData[imageY * w + imageX] * blur_filter[filterY][filterX];
+						B += imgData[imageY * w + imageX] * blur_filter[filterY][filterX];
+					}
+
+				imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 0] = R;
+				imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 1] = G;
+				imgData[channels * (global_row_blur_threads * infoHeader.width + x) + 2] = B;
+			}
+			global_row_blur_threads += 1;
+		}
+		
+		mtx_sepia.unlock();
+
+	}
+
+
+
+
+
+	void sharpen() {											//filter sharpening
+		uint32_t num_threads = infoHeader.height;
+
+
+		time_t start, end;
+		time(&start);
+
+		some_threads.push_back(std::thread(&Image::transform_to_sharpen, this));
+
+		for (auto& t : some_threads) {
+			t.join();
+		}
+		some_threads.clear();
+		time(&end);
+		std::cout << difftime(end, start) << " seconds (rgb to sepia - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
+
+	}
+
+	void transform_to_sharpen() {
+
+		double sharpening_filter[3][3] =
+		{
+<<<<<<< Updated upstream
+		   0  , -.5 ,    0 ,
+		  -.5 ,   3  , -.5,
+		  0  , -.5 ,    0
+		};
+
+=======
+		   0.11, 0.01, 0.11,
+		   0.11, 0.11, 0.11,
+		   0.11, 0.11, 0.11
+		};
+
+		
+>>>>>>> Stashed changes
+
+
+		uint32_t A{ 0 }, R{ 0 }, G{ 0 }, B{ 0 }, grey{ 0 };
+<<<<<<< Updated upstream
+
+=======
+		
+>>>>>>> Stashed changes
+		uint32_t w = infoHeader.width, h = infoHeader.height;
+
+		mtx_sepia.lock();
+
+
+
+		for (int x = 0; x < w; x++)
+		{
+			R = imgData[(infoHeader.width + x) + 0];
+			G = imgData[(infoHeader.width + x) + 1];
+			B = imgData[(infoHeader.width + x) + 2];
+
+			for (int y = 0; y < h; y++)
+			{
+				for (int filterY = 0; filterY < 3; filterY++)
+					for (int filterX = 0; filterX < 3; filterX++)
+					{
+						int imageX = (x - 3 / 2 + filterX + w) % w;
+						int imageY = (y - 3 / 2 + filterY + h) % h;
+
+
+						R += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						G += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						B += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+					}
+
+				imgData[(infoHeader.width + x) + 0] = R;
+				imgData[(infoHeader.width + x) + 1] = G;
+				imgData[(infoHeader.width + x) + 2] = B;
+			}
+
+		}
+
+		mtx_sepia.unlock();
+
+	}
+	
+
+
+	void sharpen() {
+		uint32_t num_threads = infoHeader.height;
+
+
+		time_t start, end;
+		time(&start);
+
+		some_threads.push_back(std::thread(&Image::transform_to_sharpen, this));
+
+		for (auto& t : some_threads) {
+			t.join();
+		}
+		some_threads.clear();
+		time(&end);
+		std::cout << difftime(end, start) << " seconds (rgb to sepia - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
+
+	}
+
+	void transform_to_sharpen() {
+
+		double sharpening_filter[3][3] =
+		{
+		   0  , -.5 ,    0 ,
+		  -.5 ,   3  , -.5,
+		  0  , -.5 ,    0
+		};
+
+		
+
+
+		uint32_t channels = infoHeader.bitcount / 8;
+		uint32_t A{ 0 }, R{ 0 }, G{ 0 }, B{ 0 }, grey{ 0 };
+		
+		uint32_t w = infoHeader.width, h = infoHeader.height;
+
+		mtx_sepia.lock();
+
+		
+
+		for (int x = 0; x < w; x++)
+		{
+			for (int y = 0; y < h; y++)
+			{
+
+				R = imgData[infoHeader.width + x) + 0];
+				G = imgData[infoHeader.width + x) + 1];
+				B = imgData[infoHeader.width + x) + 2];
+
+				for (int filterY = 0; filterY < 3; filterY++)
+					for (int filterX = 0; filterX < 3; filterX++)
+					{
+						int imageX = (x - 3 / 2 + filterX + w) % w;
+						int imageY = (y - 3 / 2 + filterY + h) % h;
+
+
+						R += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						G += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						B += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+					}
+
+				imgData[(infoHeader.width + x) + 0] = R;
+				imgData[(infoHeader.width + x) + 1] = G;
+				imgData[(infoHeader.width + x) + 2] = B;
+			}
+			
+		}
+
+		mtx_sepia.unlock();
+
+	}
+
+
+
+void grayscale() {
+        uint32_t num_threads = infoHeader.height;
+        global_row_greyscale_threads = 0;
+
+        time_t start, end;
+        time(&start);
+        for (uint32_t i = 0; i < num_threads; i++) {
+            some_threads.push_back(std::thread(&Image::transform_row_to_greyscale, this));
+        }
+        for (auto& t : some_threads) {
+            t.join();
+        }
+        some_threads.clear();
+        time(&end);
+        std::cout << difftime(end, start) << " seconds (rgb to grescale - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
+    }
+
+
+	void sepia() {
+
+
+
+
+        uint32_t num_threads = infoHeader.height;
+        global_row_sepia_threads = 0;
+
+        time_t start, end;
+        time(&start);
+        for (uint32_t i = 0; i < num_threads; i++) {
+            some_threads.push_back(std::thread(&Image::transform_row_to_sepia, this));
+            }
+        for (auto& t : some_threads) {
+            t.join();
+        }
+        some_threads.clear();
+        time(&end);
+        std::cout << difftime(end, start) << " seconds (rgb to sepia - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
+
+    }
+	void transform_row_to_greyscale() {
+        uint32_t channels = infoHeader.bitcount / 8;
+        uint32_t A{0}, R{0}, G{0}, B{0}, grey{0};
+        mtx_grey.lock();
+        for (uint32_t column = 0; column < infoHeader.width; column++) {
+            R = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 0];
+            G = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 1];
+            B = imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 2];
+
+            grey = ((0.3 * R) + (0.59 * G) + (0.11 * B));
+
+            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 0] = grey;
+            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 1] = grey;
+            imgData[channels * (global_row_greyscale_threads * infoHeader.width + column) + 2] = grey;
+        }
+        global_row_greyscale_threads += 1;
+        mtx_grey.unlock();
+    }
+
+    transform_row_to_sepia() {
+
+        uint32_t channels = infoHeader.bitcount / 8;
+        uint32_t A{0}, R{0}, G{0}, B{0}, grey{0};
+        uint32_t tr{0}, tg{0}, tb{0};
+        mtx_sepia.lock();
+        for (uint32_t column = 0; column < infoHeader.width; column++) {
+            R = imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 0];
+            G = imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 1];
+            B = imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 2];
+
+            tr = 0.393 * R + 0.769 * G + 0.189 * B;
+            tg = 0.349 * R + 0.686 * G + 0.168 * B;
+            tb = 0.272 * R + 0.534 * G + 0.131 * B;
+
+            if (tr > 255) R = 255;
+            else R = tr;
+            if (tg > 255) G = 255;
+            else G = tg;
+            if (tb > 255) B = 255;
+            else B = tb;
+
+            imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 0] = R;
+            imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 1] = G;
+            imgData[channels * (global_row_sepia_threads * infoHeader.width + column) + 2] = B;
+        }
+        global_row_sepia_threads += 1;
+        mtx_sepia.unlock();
+
+    }
+
 	FileHeader getFileHeader()
 	{
 		return fileHeader;
