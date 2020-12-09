@@ -356,15 +356,28 @@ public:
 
 		double sharpening_filter[3][3] =
 		{
+<<<<<<< Updated upstream
 		   0  , -.5 ,    0 ,
 		  -.5 ,   3  , -.5,
 		  0  , -.5 ,    0
 		};
 
+=======
+		   0.11, 0.01, 0.11,
+		   0.11, 0.11, 0.11,
+		   0.11, 0.11, 0.11
+		};
+
+		
+>>>>>>> Stashed changes
 
 
 		uint32_t A{ 0 }, R{ 0 }, G{ 0 }, B{ 0 }, grey{ 0 };
+<<<<<<< Updated upstream
 
+=======
+		
+>>>>>>> Stashed changes
 		uint32_t w = infoHeader.width, h = infoHeader.height;
 
 		mtx_sepia.lock();
@@ -402,6 +415,80 @@ public:
 
 	}
 	
+
+
+	void sharpen() {
+		uint32_t num_threads = infoHeader.height;
+
+
+		time_t start, end;
+		time(&start);
+
+		some_threads.push_back(std::thread(&Image::transform_to_sharpen, this));
+
+		for (auto& t : some_threads) {
+			t.join();
+		}
+		some_threads.clear();
+		time(&end);
+		std::cout << difftime(end, start) << " seconds (rgb to sepia - HEIGHT: " << infoHeader.height << " threads, 1 per row, WIDTH: " << infoHeader.width << ")" << std::endl;
+
+	}
+
+	void transform_to_sharpen() {
+
+		double sharpening_filter[3][3] =
+		{
+		   0  , -.5 ,    0 ,
+		  -.5 ,   3  , -.5,
+		  0  , -.5 ,    0
+		};
+
+		
+
+
+		uint32_t channels = infoHeader.bitcount / 8;
+		uint32_t A{ 0 }, R{ 0 }, G{ 0 }, B{ 0 }, grey{ 0 };
+		
+		uint32_t w = infoHeader.width, h = infoHeader.height;
+
+		mtx_sepia.lock();
+
+		
+
+		for (int x = 0; x < w; x++)
+		{
+			for (int y = 0; y < h; y++)
+			{
+
+				R = imgData[infoHeader.width + x) + 0];
+				G = imgData[infoHeader.width + x) + 1];
+				B = imgData[infoHeader.width + x) + 2];
+
+				for (int filterY = 0; filterY < 3; filterY++)
+					for (int filterX = 0; filterX < 3; filterX++)
+					{
+						int imageX = (x - 3 / 2 + filterX + w) % w;
+						int imageY = (y - 3 / 2 + filterY + h) % h;
+
+
+						R += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						G += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+						B += imgData[imageY * w + imageX] * sharpening_filter[filterY][filterX];
+					}
+
+				imgData[(infoHeader.width + x) + 0] = R;
+				imgData[(infoHeader.width + x) + 1] = G;
+				imgData[(infoHeader.width + x) + 2] = B;
+			}
+			
+		}
+
+		mtx_sepia.unlock();
+
+	}
+
+
 
 
 
